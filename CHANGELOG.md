@@ -2,6 +2,10 @@
 
 All notable user-facing changes are documented here.
 
+## Unreleased
+
+- Pass Claude's pinned-model settings and system prompt as files in the temporary request workspace instead of command-line arguments. This fixes `Invalid JSON provided to --settings` where process creation strips embedded quotes, such as on Windows, and keeps prompts with quotes or line breaks intact.
+
 ## 0.6.5 — Early Access
 
 - Require an IDE restart for plugin installation, updates, and removal, avoiding the platform's unsafe dynamic reload path.

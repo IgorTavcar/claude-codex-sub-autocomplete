@@ -31,10 +31,13 @@ object ClaudeCliCompatibilitySmoke {
       println("Installed CLI: ${version.stdout.trim()}")
       val help = run(listOf(executable.toString(), "--help"))
       check(help.exitCode == 0 && !help.timedOut) { "Claude help probe failed" }
-      val flags = backend.command(executable, prompt, ProviderPolicy.DEFAULT_CLAUDE_MODEL, 32)
+      val flags = backend.command(executable, prompt, ProviderPolicy.DEFAULT_CLAUDE_MODEL, 32, workspace)
         .filter { it.startsWith("--") }
-      check(flags.all { help.stdout.contains(it) }) {
-        "Installed CLI does not document required flags: ${flags.filterNot(help.stdout::contains)}"
+      // The CLI help lists file variants only in the combined form "--system-prompt[-file]".
+      fun documented(flag: String): Boolean = help.stdout.contains(flag) ||
+        (flag.endsWith("-file") && help.stdout.contains(flag.removeSuffix("-file") + "[-file]"))
+      check(flags.all(::documented)) {
+        "Installed CLI does not document required flags: ${flags.filterNot(::documented)}"
       }
       println("Production CLI flags: ${flags.size}/${flags.size} supported")
 
@@ -55,7 +58,7 @@ object ClaudeCliCompatibilitySmoke {
       println("Real signed-out authentication: rejected with login guidance")
       for (model in ProviderPolicy.claudeModels) {
         // With loggedIn=false this exercises option/settings parsing and the CLI's authentication error.
-        val response = run(backend.command(executable, prompt, model, 32), prompt.userPrompt)
+        val response = run(backend.command(executable, prompt, model, 32, workspace), prompt.userPrompt)
         check(response.exitCode != 0 && !response.timedOut) { "Expected a prompt authentication failure for $model" }
         val detail = response.stdout + "\n" + response.stderr
         check(!Regex("unknown option|unrecognized option|invalid option", RegexOption.IGNORE_CASE).containsMatchIn(detail)) {

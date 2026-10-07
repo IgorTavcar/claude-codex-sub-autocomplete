@@ -10,6 +10,7 @@ import com.kkoemets.subscriptionautocomplete.settings.ProviderKind
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runInterruptible
+import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicLong
 
@@ -36,7 +37,7 @@ class ClaudeBackend : CompletionBackend {
         val streamLimiter = ClaudeStreamLimiter(maxCharacters)
         val providerStartedAt = System.nanoTime()
         val result = ProcessRunner.runStreamingLines(
-          command = command(executable, prompt, model, settings.maxOutputTokens),
+          command = command(executable, prompt, model, settings.maxOutputTokens, workspace),
           input = prompt.userPrompt,
           workingDirectory = workspace,
           timeoutSeconds = settings.timeoutSeconds,
@@ -94,13 +95,26 @@ class ClaudeBackend : CompletionBackend {
     BackendResult.Failure("Claude completion failed: ${error.message ?: error.javaClass.simpleName}")
   }
 
-  internal fun command(executable: Path, prompt: CompletionPrompt, model: String, maxOutputTokens: Int): List<String> {
+  internal fun command(
+    executable: Path,
+    prompt: CompletionPrompt,
+    model: String,
+    maxOutputTokens: Int,
+    workspace: Path,
+  ): List<String> {
     val settingsJson = JsonObject().apply {
       addProperty("model", model)
       add("availableModels", JsonArray().apply { add(model) })
       addProperty("enforceAvailableModels", true)
       add("fallbackModel", JsonArray())
     }.toString()
+    // Windows process creation drops the double quotes of an inline JSON argument and splits a
+    // quoted prompt into several arguments, so free-form values reach the CLI as files.
+    val settingsFile = Files.writeString(workspace.resolve(SETTINGS_FILE), settingsJson)
+    val systemPromptFile = Files.writeString(
+      workspace.resolve(SYSTEM_PROMPT_FILE),
+      prompt.systemPrompt + "\nReturn no more than $maxOutputTokens approximate tokens.",
+    )
     return listOf(
       executable.toString(),
       "-p",
@@ -123,9 +137,9 @@ class ClaudeBackend : CompletionBackend {
       "--permission-mode",
       "dontAsk",
       "--settings",
-      settingsJson,
-      "--system-prompt",
-      prompt.systemPrompt + "\nReturn no more than $maxOutputTokens approximate tokens.",
+      settingsFile.toString(),
+      "--system-prompt-file",
+      systemPromptFile.toString(),
     )
   }
 
@@ -202,6 +216,8 @@ class ClaudeBackend : CompletionBackend {
     const val ORGANIZATION_DISABLED_MESSAGE =
       "Claude subscription access is disabled for this organization. Ask its administrator to enable Claude Code subscription access."
     const val ORGANIZATION_DISABLED_COOLDOWN_NANOS = 60_000_000_000L
+    const val SETTINGS_FILE = "autocomplete-settings.json"
+    const val SYSTEM_PROMPT_FILE = "autocomplete-system-prompt.txt"
   }
 }
 
