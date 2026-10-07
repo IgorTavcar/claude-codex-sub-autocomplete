@@ -42,8 +42,14 @@ class ClaudeBackendIntegrationTest {
         assertEquals("dontAsk", option("--permission-mode"))
         listOf("--safe-mode", "--no-session-persistence", "--strict-mcp-config", "--disable-slash-commands")
           .forEach { assertContains(arguments, it) }
-        assertContains(option("--system-prompt"), PROMPT.systemPrompt)
-        val settings = JsonParser.parseString(option("--settings")).asJsonObject
+        val workspace = Path.of(cli.read("cwd").trim())
+        for (name in listOf("--settings", "--system-prompt-file")) {
+          val file = Path.of(option(name))
+          assertTrue(file.isAbsolute, "$name must not depend on the provider's working directory")
+          assertEquals(workspace.fileName, file.parent.fileName)
+        }
+        assertContains(cli.read("system-prompt"), PROMPT.systemPrompt)
+        val settings = JsonParser.parseString(cli.read("settings")).asJsonObject
         assertEquals(model, settings.get("model").asString)
         assertEquals(listOf(model), settings.getAsJsonArray("availableModels").map { it.asString })
         assertTrue(settings.get("enforceAvailableModels").asBoolean)
@@ -65,6 +71,23 @@ class ClaudeBackendIntegrationTest {
       assertEquals("git status --short", TerminalCommandSanitizer.sanitize(result.text))
       assertEquals(prompt.userPrompt, cli.read("input"))
       cli.assertWorkspaceRemoved()
+    }
+  }
+
+  @Test
+  fun `free-form values reach Claude as files instead of command-line arguments`() = runBlocking {
+    // Windows process creation strips unescaped double quotes and splits the text between them.
+    val prompt = TerminalCommandPromptBuilder.build(
+      TerminalPromptContext("show short git status", "zsh", "/workspace/sample", "sample", listOf(".git")),
+    )
+    assertTrue(prompt.systemPrompt.contains('"') && prompt.systemPrompt.contains('\n'))
+    fixture(success("git status --short")).use { cli ->
+      assertIs<BackendResult.Success>(ClaudeBackend().complete(prompt, cli.settings))
+      val arguments = cli.read("arguments").split('\u0000').dropLast(1)
+      val unsafe = arguments.filter { argument -> argument.any { it == '"' || it == '\n' || it == '\r' } }
+      assertTrue(unsafe.isEmpty(), "Arguments that Windows would corrupt: $unsafe")
+      assertContains(cli.read("system-prompt"), prompt.systemPrompt)
+      assertTrue(JsonParser.parseString(cli.read("settings")).isJsonObject)
     }
   }
 
@@ -162,6 +185,14 @@ class ClaudeBackendIntegrationTest {
       printf '%s\n' request >> "${'$'}record_dir/calls"
       pwd > "${'$'}record_dir/cwd"
       printf '%s\0' "${'$'}@" > "${'$'}record_dir/arguments"
+      previous=
+      for argument in "${'$'}@"; do
+        case "${'$'}previous" in
+          --settings) cat "${'$'}argument" > "${'$'}record_dir/settings" ;;
+          --system-prompt-file) cat "${'$'}argument" > "${'$'}record_dir/system-prompt" ;;
+        esac
+        previous=${'$'}argument
+      done
       printf '%s\n' "${'$'}CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC" "${'$'}DISABLE_AUTOUPDATER" "${'$'}MAX_THINKING_TOKENS" > "${'$'}record_dir/environment"
       cat > "${'$'}record_dir/input"
       $body
