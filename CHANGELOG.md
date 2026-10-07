@@ -5,6 +5,7 @@ All notable user-facing changes are documented here.
 ## Unreleased
 
 - Pass Claude's pinned-model settings and system prompt as files in the temporary request workspace instead of command-line arguments. This fixes `Invalid JSON provided to --settings` where process creation strips embedded quotes, such as on Windows, and keeps prompts with quotes or line breaks intact.
+- Redact the whole quoted value of credential-named fields, so `"Authorization": "Bearer …"`, multi-word passwords, and quoted cookie strings no longer leave the credential in a request. Also redact header credentials for any authorization scheme, every pair of an inline cookie header, and additional GitHub, Slack, Google, Stripe, npm, and Hugging Face token formats.
 
 ## 0.6.5 — Early Access
 
