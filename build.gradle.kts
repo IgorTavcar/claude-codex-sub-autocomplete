@@ -490,7 +490,6 @@ tasks.register("verifyMarketplaceMetadata") {
     "EULA.md",
     "LICENSE",
     "CONTRIBUTING.md",
-    "SECURITY.md",
     "SUPPORT.md",
     "RELEASING.md",
   )
