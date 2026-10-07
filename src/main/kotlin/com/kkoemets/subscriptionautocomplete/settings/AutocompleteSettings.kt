@@ -47,7 +47,7 @@ class AutocompleteSettings : PersistentStateComponent<AutocompleteSettings.Setti
     var manualOnly: Boolean = true,
     var automaticEngine: String = AutomaticCompletionEngine.OFF.name,
     var provider: String = ProviderKind.CODEX.name,
-    var claudeModel: String = "haiku",
+    var claudeModel: String = ProviderPolicy.DEFAULT_CLAUDE_MODEL,
     var codexModel: String = ProviderPolicy.DEFAULT_CODEX_MODEL,
     var codexReasoningEffort: String = ProviderPolicy.DEFAULT_CODEX_EFFORT,
     var claudeExecutable: String = "",

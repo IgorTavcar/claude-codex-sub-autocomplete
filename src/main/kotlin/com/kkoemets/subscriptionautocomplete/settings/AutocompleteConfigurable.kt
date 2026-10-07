@@ -29,11 +29,11 @@ class AutocompleteConfigurable : Configurable {
   )
   private val provider = ComboBox<ProviderKind>(CollectionComboBoxModel(ProviderKind.entries.toList()))
   private val claudeModel = editableCombo(ProviderPolicy.claudeModels).apply {
-    toolTipText = "<html>Default: Haiku. It produced the best measured subscription-autocomplete latency<br>" +
-      "in the live multi-language evaluation. Choose a larger Claude model only when quality matters more than speed.</html>"
+    toolTipText = "<html>Default: Opus. Each alias follows the newest release of its Claude family.<br>" +
+      "Choose Haiku when latency and subscription allowance matter more than quality.</html>"
   }
   private val codexModel = editableCombo(ProviderPolicy.codexFallbackChoices).apply {
-    toolTipText = "<html>Default: GPT-5.6 Luna with low reasoning.<br>" +
+    toolTipText = "<html>Default: GPT-6.1 Sol with low reasoning.<br>" +
       "Choose a model available through your ChatGPT subscription.</html>"
   }
   private val codexEffort = editableCombo(ProviderPolicy.codexReasoningEfforts).apply {

@@ -63,10 +63,11 @@ class AutocompleteSettingsTest {
   }
 
   @Test
-  fun `new settings use the pinned Luna low pair by default`() {
+  fun `new settings use the newest provider models by default`() {
     val state = AutocompleteSettings.SettingsState()
 
-    assertEquals("gpt-5.6-luna", state.codexModel)
+    assertEquals("opus", state.claudeModel)
+    assertEquals("gpt-6.1-sol", state.codexModel)
     assertEquals("low", state.codexReasoningEffort)
   }
 
@@ -184,7 +185,7 @@ class AutocompleteSettingsTest {
   }
 
   @Test
-  fun `legacy Luna low default keeps the current default pair`() {
+  fun `legacy Luna low default migrates to the current default pair`() {
     val settings = AutocompleteSettings()
 
     settings.loadState(
@@ -195,7 +196,7 @@ class AutocompleteSettingsTest {
       ),
     )
 
-    assertEquals("gpt-5.6-luna", settings.state.codexModel)
+    assertEquals("gpt-6.1-sol", settings.state.codexModel)
     assertEquals("low", settings.state.codexReasoningEffort)
   }
 
@@ -226,7 +227,7 @@ class AutocompleteSettingsTest {
       ),
     )
 
-    assertEquals("gpt-5.6-luna", settings.state.codexModel)
+    assertEquals("gpt-6.1-sol", settings.state.codexModel)
     assertEquals("low", settings.state.codexReasoningEffort)
   }
 

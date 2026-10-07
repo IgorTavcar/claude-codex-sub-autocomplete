@@ -8,6 +8,7 @@ All notable user-facing changes are documented here.
 - Redact the whole quoted value of credential-named fields, so `"Authorization": "Bearer …"`, multi-word passwords, and quoted cookie strings no longer leave the credential in a request. Also redact header credentials for any authorization scheme, every pair of an inline cookie header, and additional GitHub, Slack, Google, Stripe, npm, and Hugging Face token formats.
 - Disable shell and other agent tools in the one-shot Codex fallback, matching the resident app-server path. Previously the fallback agent could run commands in its read-only sandbox.
 - Withhold each provider's API credentials from the other provider's CLI process.
+- Default to the newest provider models: the Claude `opus` alias, currently Opus 5.5, and Codex `gpt-6.1-sol` with `low` reasoning. The model lists now offer Claude `opus`, `sonnet`, `fable`, and `haiku`, and Codex `gpt-6.1-sol`, `gpt-6-astra`, `gpt-6-sol`, and `gpt-6-luna`. Explicitly saved model choices are retained; any other model name can still be typed.
 
 ## 0.6.5 — Early Access
 

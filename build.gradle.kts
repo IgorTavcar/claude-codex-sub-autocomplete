@@ -182,11 +182,11 @@ tasks.register<JavaExec>("subscriptionEvals") {
   systemProperty("eval.cases", providers.gradleProperty("evalCases").orElse("").get())
   systemProperty(
     "eval.claudeModel",
-    providers.gradleProperty("evalClaudeModel").orElse("haiku").get(),
+    providers.gradleProperty("evalClaudeModel").orElse("opus").get(),
   )
   systemProperty(
     "eval.codexModel",
-    providers.gradleProperty("evalCodexModel").orElse("gpt-5.6-luna").get(),
+    providers.gradleProperty("evalCodexModel").orElse("gpt-6.1-sol").get(),
   )
   systemProperty(
     "eval.codexReasoningEffort",
@@ -250,11 +250,11 @@ tasks.register<JavaExec>("subscriptionTerminalEvals") {
   systemProperty("terminal.eval.seed", providers.gradleProperty("terminalEvalSeed").orElse("20260722").get())
   systemProperty(
     "terminal.eval.claudeModel",
-    providers.gradleProperty("terminalEvalClaudeModel").orElse("haiku").get(),
+    providers.gradleProperty("terminalEvalClaudeModel").orElse("opus").get(),
   )
   systemProperty(
     "terminal.eval.codexModel",
-    providers.gradleProperty("terminalEvalCodexModel").orElse("gpt-5.6-luna").get(),
+    providers.gradleProperty("terminalEvalCodexModel").orElse("gpt-6.1-sol").get(),
   )
   systemProperty(
     "terminal.eval.codexReasoningEffort",
@@ -311,11 +311,11 @@ tasks.register<JavaExec>("terminalSampleEval") {
   systemProperty("terminal.eval.seed", providers.gradleProperty("terminalEvalSeed").orElse("20260722").get())
   systemProperty(
     "terminal.eval.claudeModel",
-    providers.gradleProperty("terminalEvalClaudeModel").orElse("haiku").get(),
+    providers.gradleProperty("terminalEvalClaudeModel").orElse("opus").get(),
   )
   systemProperty(
     "terminal.eval.codexModel",
-    providers.gradleProperty("terminalEvalCodexModel").orElse("gpt-5.6-luna").get(),
+    providers.gradleProperty("terminalEvalCodexModel").orElse("gpt-6.1-sol").get(),
   )
   systemProperty(
     "terminal.eval.codexReasoningEffort",
@@ -380,11 +380,11 @@ tasks.register<JavaExec>("subscriptionSampleEval") {
   systemProperty("eval.seed", providers.gradleProperty("evalSeed").orElse("20260718").get())
   systemProperty(
     "eval.claudeModel",
-    providers.gradleProperty("evalClaudeModel").orElse("haiku").get(),
+    providers.gradleProperty("evalClaudeModel").orElse("opus").get(),
   )
   systemProperty(
     "eval.codexModel",
-    providers.gradleProperty("evalCodexModel").orElse("gpt-5.6-luna").get(),
+    providers.gradleProperty("evalCodexModel").orElse("gpt-6.1-sol").get(),
   )
   systemProperty(
     "eval.codexReasoningEffort",
@@ -422,7 +422,7 @@ tasks.register<JavaExec>("codexLifecycleSmoke") {
   mainClass.set("com.kkoemets.subscriptionautocomplete.eval.CodexLifecycleSmoke")
   systemProperty(
     "eval.codexModel",
-    providers.gradleProperty("evalCodexModel").orElse("gpt-5.6-luna").get(),
+    providers.gradleProperty("evalCodexModel").orElse("gpt-6.1-sol").get(),
   )
   systemProperty(
     "eval.codexReasoningEffort",

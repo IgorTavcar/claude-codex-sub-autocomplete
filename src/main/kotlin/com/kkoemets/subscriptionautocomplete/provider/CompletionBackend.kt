@@ -54,20 +54,18 @@ interface CompletionBackend {
 }
 
 object ProviderPolicy {
-  const val DEFAULT_CLAUDE_MODEL = "haiku"
-  const val CODEX_SPARK_MODEL = "gpt-5.3-codex-spark"
-  const val DEFAULT_CODEX_MODEL = "gpt-5.6-luna"
+  const val DEFAULT_CLAUDE_MODEL = "opus"
+  const val DEFAULT_CODEX_MODEL = "gpt-6.1-sol"
   const val DEFAULT_CODEX_EFFORT = "low"
   const val LEGACY_CODEX_MODEL = "gpt-5.6-luna"
 
-  val claudeModels = listOf("haiku", "sonnet", "opus")
+  // Claude aliases follow the newest release of each family, so they need no version bumps.
+  val claudeModels = listOf(DEFAULT_CLAUDE_MODEL, "sonnet", "fable", "haiku")
   val codexFallbackChoices = listOf(
     DEFAULT_CODEX_MODEL,
-    CODEX_SPARK_MODEL,
-    "gpt-5.6-sol",
-    "gpt-5.6-terra",
-    "gpt-5.5",
-    "gpt-5.4",
+    "gpt-6-astra",
+    "gpt-6-sol",
+    "gpt-6-luna",
   )
   val codexReasoningEfforts = listOf("none", "low", "medium", "high", "xhigh", "max")
   val codexNoReasoningModels = setOf(
