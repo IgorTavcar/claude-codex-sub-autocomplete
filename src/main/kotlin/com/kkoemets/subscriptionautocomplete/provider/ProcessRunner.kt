@@ -152,11 +152,16 @@ object BillingEnvironment {
   )
 
   fun subscriptionOnlyClaude(environment: MutableMap<String, String>) {
-    claudeBilledKeys.forEach(environment::remove)
+    removeBilledKeys(environment)
     environment.putAll(claudeAutocompleteEnvironment)
   }
 
   fun subscriptionOnlyCodex(environment: MutableMap<String, String>) {
-    codexBilledKeys.forEach(environment::remove)
+    removeBilledKeys(environment)
+  }
+
+  // Neither CLI needs the other provider's API credentials, so each receives none of them.
+  private fun removeBilledKeys(environment: MutableMap<String, String>) {
+    (claudeBilledKeys + codexBilledKeys).forEach(environment::remove)
   }
 }

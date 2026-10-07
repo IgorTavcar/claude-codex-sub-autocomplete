@@ -1,5 +1,6 @@
 package com.kkoemets.subscriptionautocomplete.provider
 
+import java.nio.file.Path
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -146,5 +147,41 @@ class BackendParserTest {
     assertNull(codex["OPENAI_API_KEY"])
     assertNull(codex["AZURE_OPENAI_ENDPOINT"])
     assertEquals("/credentials", codex["CODEX_HOME"])
+  }
+
+  @Test
+  fun `billing environments withhold the other provider's API credentials`() {
+    val claude = mutableMapOf("OPENAI_API_KEY" to "secret", "CODEX_API_KEY" to "secret", "HOME" to "/home/user")
+    val codex = mutableMapOf(
+      "ANTHROPIC_API_KEY" to "secret",
+      "ANTHROPIC_AUTH_TOKEN" to "secret",
+      "AWS_SECRET_ACCESS_KEY" to "secret",
+      "HOME" to "/home/user",
+    )
+
+    BillingEnvironment.subscriptionOnlyClaude(claude)
+    BillingEnvironment.subscriptionOnlyCodex(codex)
+
+    assertNull(claude["OPENAI_API_KEY"])
+    assertNull(claude["CODEX_API_KEY"])
+    assertEquals("/home/user", claude["HOME"])
+    assertEquals(mapOf("HOME" to "/home/user"), codex)
+  }
+
+  @Test
+  fun `one-shot Codex fallback disables the agent capabilities the app server disables`() {
+    val command = CodexBackend().oneShotCommand(Path.of("/usr/local/bin/codex"), "gpt-test", "low")
+    val overrides = command.zipWithNext().filter { it.first == "--config" }.map { it.second }
+
+    assertEquals(listOf("/usr/local/bin/codex", "exec"), command.take(2))
+    assertEquals("-", command.last())
+    assertTrue("mcp_servers={}" in overrides)
+    assertTrue(CodexAppServerProtocol.DISABLED_FEATURES.isNotEmpty())
+    CodexAppServerProtocol.DISABLED_FEATURES.forEach { feature ->
+      assertTrue("features.$feature=false" in overrides, "One-shot fallback leaves $feature enabled")
+    }
+    listOf("shell_tool", "unified_exec").forEach { assertTrue(it in CodexAppServerProtocol.DISABLED_FEATURES) }
+    // --disable rejects feature names an older CLI does not know, which would break the fallback.
+    assertFalse("--disable" in command)
   }
 }

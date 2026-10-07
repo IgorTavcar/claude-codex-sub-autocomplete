@@ -70,22 +70,7 @@ class CodexBackend : CompletionBackend, AutoCloseable {
     maxOutputTokens: Int,
   ): BackendResult = TemporaryWorkspace.use { workspace ->
     val result = ProcessRunner.run(
-      command = listOf(
-        executable.toString(),
-        "exec",
-        "--ephemeral",
-        "--ignore-user-config",
-        "--ignore-rules",
-        "--sandbox",
-        "read-only",
-        "--skip-git-repo-check",
-        "--model",
-        model,
-        "--config",
-        "model_reasoning_effort=\"$effort\"",
-        "--json",
-        "-",
-      ),
+      command = oneShotCommand(executable, model, effort),
       input = prompt.combined() + "\n\nReturn no more than $maxOutputTokens approximate tokens.",
       workingDirectory = workspace,
       timeoutSeconds = timeoutSeconds,
@@ -102,6 +87,31 @@ class CodexBackend : CompletionBackend, AutoCloseable {
     }.let { parsed ->
       if (parsed is BackendResult.Success) parsed.copy(transport = "one-shot exec fallback") else parsed
     }
+  }
+
+  internal fun oneShotCommand(executable: Path, model: String, effort: String): List<String> = buildList {
+    add(executable.toString())
+    add("exec")
+    add("--ephemeral")
+    add("--ignore-user-config")
+    add("--ignore-rules")
+    add("--sandbox")
+    add("read-only")
+    add("--skip-git-repo-check")
+    add("--model")
+    add(model)
+    add("--config")
+    add("model_reasoning_effort=\"$effort\"")
+    add("--config")
+    add("mcp_servers={}")
+    // Without these the fallback agent can still run shell commands in its read-only sandbox.
+    // Config overrides ignore feature names a CLI does not know, whereas --disable rejects them.
+    CodexAppServerProtocol.DISABLED_FEATURES.forEach { feature ->
+      add("--config")
+      add("features.$feature=false")
+    }
+    add("--json")
+    add("-")
   }
 
   internal fun parseJsonLines(

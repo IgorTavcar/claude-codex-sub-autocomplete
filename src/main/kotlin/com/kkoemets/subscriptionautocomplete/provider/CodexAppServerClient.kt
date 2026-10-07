@@ -618,7 +618,7 @@ internal class CompletionDeadline private constructor(private val expiresAtNanos
 }
 
 internal object CodexAppServerProtocol {
-  private val DISABLED_FEATURES = listOf(
+  val DISABLED_FEATURES = listOf(
     "apps",
     "browser_use",
     "code_mode",
